@@ -3,6 +3,7 @@
 # 1. Cleans up any synced VS Code settings/extensions
 # 2. Fetches lesson content from external repos
 # 3. Merges student workspace content
+# 4. Configures Claude Code to use API key without login prompt
 
 echo ""
 echo "📚 Feedforward AI Course"
@@ -55,7 +56,7 @@ mkdir -p workspace/skills workspace/agents workspace/commands workspace/projects
 
 # Fetch lessons.txt from the MASTER repo (not the student's fork)
 # This allows you to control which lessons are active for all students
-MASTER_REPO="https://raw.githubusercontent.com/feedforward-ai/feedforward-ai-class/main/lessons.txt"
+MASTER_REPO="https://raw.githubusercontent.com/Feedforward-AI/feedforward-ai-course/main/lessons.txt"
 LESSONS=$(curl -s "$MASTER_REPO" 2>/dev/null | grep -v '^#' | grep -v '^$')
 
 # If we couldn't fetch from remote, fall back to local lessons.txt
@@ -105,7 +106,29 @@ cp -rn workspace/agents/* .claude/agents/ 2>/dev/null || true
 cp -rn workspace/commands/* .claude/commands/ 2>/dev/null || true
 
 # =============================================================================
-# STEP 5: Display status
+# STEP 5: Configure Claude Code to use API key without login prompt
+# =============================================================================
+
+mkdir -p ~/.claude
+
+# Skip the onboarding/login flow
+cat > ~/.claude.json << 'CLAUDE_JSON'
+{
+  "hasCompletedOnboarding": true
+}
+CLAUDE_JSON
+
+# Configure to use the API key from environment
+# Note: Double quotes so $ANTHROPIC_API_KEY expands
+cat > ~/.claude/settings.json << CLAUDE_SETTINGS
+{
+  "apiProvider": "anthropic",
+  "customApiKey": "$ANTHROPIC_API_KEY"
+}
+CLAUDE_SETTINGS
+
+# =============================================================================
+# STEP 6: Display status
 # =============================================================================
 
 SKILL_COUNT=$(find .claude/skills -name "SKILL.md" 2>/dev/null | wc -l | tr -d ' ')
