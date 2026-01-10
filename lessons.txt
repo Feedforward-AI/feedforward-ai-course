@@ -1,0 +1,8 @@
+# Feedforward AI Course - Lesson Content
+# Uncomment lessons to enable them for all students
+# Sessions are cumulative - all uncommented lessons are loaded
+
+https://github.com/feedforward-ai/lesson-1-repo
+# https://github.com/feedforward-ai/lesson-2-repo
+# https://github.com/feedforward-ai/lesson-3-repo
+# https://github.com/feedforward-ai/lesson-4-repo
