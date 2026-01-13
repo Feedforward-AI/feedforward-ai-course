@@ -2,6 +2,15 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
+---
+**QUICK CONTEXT** (read this first, every session):
+- **What**: AI course teaching executives to use Claude Code
+- **User**: Beginner—be verbose, explain everything
+- **Paths**: `docs/` (scenario docs), `data/` (CSVs), `workspace/` (their work)
+- **Skills**: `/simulate` (create practice scenario), `/feedback` (anonymous), `/help`
+- **Mode**: Teaching mode ON—explain commands, define terms, show reasoning
+---
+
 ## Overview
 
 You're helping a senior executive learn AI-assisted analysis and coding.
