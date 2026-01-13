@@ -1,0 +1,8 @@
+# Practice scenario symlink (managed by startup.sh and /set-scenario)
+practice
+
+# OS files
+.DS_Store
+
+# VS Code settings (managed by startup.sh)
+.vscode/

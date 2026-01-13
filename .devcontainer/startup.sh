@@ -98,7 +98,30 @@ for REPO_URL in $LESSONS; do
 done
 
 # =============================================================================
-# STEP 4: Merge student's own tools into .claude/
+# STEP 4: Create practice/ symlink (active scenario pointer)
+# =============================================================================
+
+# practice/ is a symlink that points to the "active" scenario folder
+# Default: points to docs/ (Meridian content)
+# Can be changed via /set-scenario to point to a user's simulation
+# Note: [ ! -e ] returns false for broken symlinks, so this auto-repairs
+
+if [ ! -e "practice" ]; then
+    ln -s docs practice
+    echo "   ✓ Practice scenario: Meridian (default)"
+else
+    # Show what practice currently points to
+    TARGET=$(readlink practice 2>/dev/null || echo "docs")
+    if [[ "$TARGET" == "docs" ]]; then
+        echo "   ✓ Practice scenario: Meridian"
+    else
+        SCENARIO_NAME=$(basename "$TARGET")
+        echo "   ✓ Practice scenario: $SCENARIO_NAME"
+    fi
+fi
+
+# =============================================================================
+# STEP 5: Merge student's own tools into .claude/
 # =============================================================================
 
 cp -rn workspace/skills/* .claude/skills/ 2>/dev/null || true
@@ -106,7 +129,7 @@ cp -rn workspace/agents/* .claude/agents/ 2>/dev/null || true
 cp -rn workspace/commands/* .claude/commands/ 2>/dev/null || true
 
 # =============================================================================
-# STEP 5: Configure Claude Code to use API key without login prompt
+# STEP 6: Configure Claude Code to use API key without login prompt
 # =============================================================================
 
 mkdir -p ~/.claude
@@ -128,7 +151,7 @@ cat > ~/.claude/settings.json << CLAUDE_SETTINGS
 CLAUDE_SETTINGS
 
 # =============================================================================
-# STEP 6: Display status
+# STEP 7: Display status
 # =============================================================================
 
 SKILL_COUNT=$(find .claude/skills -name "SKILL.md" 2>/dev/null | wc -l | tr -d ' ')

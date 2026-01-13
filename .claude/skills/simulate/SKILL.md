@@ -230,14 +230,47 @@ Your `simulation-YYYY-MM-DD/` folder contains [X] documents including:
 *This simulation was created on [date]. To create a new simulation, run `/simulate` again.*
 ```
 
-### Phase 9: Wrap-Up
+### Phase 9: Activate as Practice Scenario
 
-After generating everything:
+After generating the documents, offer to make this the active practice scenario:
+
+> "I've created your simulation. Would you like to make this your **active practice scenario**?"
+>
+> This means when you do exercises, they'll use your simulation instead of the default Meridian case study.
+
+Use AskUserQuestion with options:
+- **Yes, activate it** - I want to practice with my simulation
+- **No, keep Meridian** - I'll stick with the default case study for now
+
+**If they choose Yes:**
+
+Update the `practice/` symlink to point to the new simulation:
+
+```bash
+# Remove old symlink
+rm practice
+
+# Create new symlink to the simulation
+ln -s workspace/projects/simulation-YYYY-MM-DD practice
+```
+
+Confirm:
+> "Done! Your `practice/` folder now points to your simulation. All exercises will use your custom scenario."
+
+**If they choose No:**
+
+> "No problem! Your simulation is saved at `workspace/projects/simulation-YYYY-MM-DD/`. You can activate it anytime by running `/set-scenario`."
+
+### Phase 10: Wrap-Up
+
+After the activation choice:
 
 1. Explain what was created and where to find it
 2. Show them how to view the PERSONA.md file:
    > "To see your persona and assignment, you can ask me to 'show my persona' or open the file at `workspace/projects/simulation-YYYY-MM-DD/PERSONA.md`"
-3. Suggest next steps:
+3. Remind them about switching:
+   > "To switch between your simulation and Meridian anytime, run `/set-scenario`."
+4. Suggest next steps:
    > "You can now use these documents to practice with Claude. Try asking me to help you with your assignment, analyze the data, draft responses to emails, or prepare for meetings."
 
 ## Key Principles

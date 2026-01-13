@@ -6,8 +6,8 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 **QUICK CONTEXT** (read this first, every session):
 - **What**: AI course teaching executives to use Claude Code
 - **User**: Beginner—be verbose, explain everything
-- **Paths**: `docs/` (scenario docs), `data/` (CSVs), `workspace/` (their work)
-- **Skills**: `/simulate` (create practice scenario), `/feedback` (anonymous), `/help`
+- **Paths**: `practice/` (active scenario), `data/` (CSVs), `workspace/` (their work)
+- **Skills**: `/simulate` (create scenario), `/set-scenario` (switch scenarios), `/feedback`, `/help`
 - **Mode**: Teaching mode ON—explain commands, define terms, show reasoning
 ---
 
@@ -17,9 +17,25 @@ You're helping a senior executive learn AI-assisted analysis and coding.
 
 ## Context
 
-The `docs/` folder contains internal documents from Meridian Industries, a $10B industrial distributor with 25,000 employees. They've invested $8M in AI with mixed results. The documents reveal a story about enterprise AI transformation.
+### Active Practice Scenario
 
-The `data/` folder contains CSV files with usage metrics, department KPIs, and financial data.
+The `practice/` folder points to the user's **active scenario**. This is where exercises should read documents from. By default it points to Meridian, but users can switch to their own simulation.
+
+To check what scenario is active: `readlink practice`
+- If it shows `docs` → they're using Meridian (default)
+- If it shows `workspace/projects/simulation-*` → they're using their custom simulation
+
+### Available Scenarios
+
+1. **Meridian Industries** (default): A $10B industrial distributor with 25,000 employees that invested $8M in AI with mixed results. Documents in `docs/` reveal a story about enterprise AI transformation.
+
+2. **Custom Simulations**: Users can create their own scenario with `/simulate`. These are stored in `workspace/projects/simulation-YYYY-MM-DD/`.
+
+Use `/set-scenario` to switch between scenarios.
+
+### Data Files
+
+The `data/` folder contains CSV files with usage metrics, department KPIs, and financial data (currently Meridian-specific).
 
 ## The User
 
@@ -50,13 +66,14 @@ Regularly inform the user about the state of their context window (how much of t
 
 ## Important Paths
 
-- Scenario documents: `docs/`
+- **Active scenario**: `practice/` (symlink - use this for exercises)
+- Meridian documents: `docs/`
 - Data files: `data/`
 - Student workspace: `workspace/` (their persistent work area)
   - `workspace/skills/` - student-created skills
   - `workspace/agents/` - student-created agents
   - `workspace/commands/` - student-created commands
-  - `workspace/projects/` - their analysis outputs
+  - `workspace/projects/` - their analysis outputs and simulations
   - `workspace/notes/` - scratch work
 - Active tools: `.claude/skills/`, `.claude/agents/`, `.claude/commands/`
 
@@ -72,4 +89,6 @@ This is a Codespaces-based learning environment:
 
 2. **Tool Merging**: Student-created tools in `workspace/skills|agents|commands/` are copied into `.claude/` on each startup, allowing students to extend the environment.
 
-3. **Scenario-Based Learning**: The Meridian Industries documents in `docs/` form a cohesive case study. Data in `data/` provides real metrics for analysis exercises.
+3. **Practice Scenario Symlink**: The `practice/` symlink points to the active scenario folder. By default it points to `docs/` (Meridian). When students create a simulation with `/simulate`, they can activate it as their practice scenario. Use `/set-scenario` to switch.
+
+4. **Scenario-Based Learning**: The Meridian Industries documents in `docs/` form a cohesive case study. Students can also create custom simulations that mirror their real work context.
