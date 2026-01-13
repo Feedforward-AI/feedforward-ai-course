@@ -72,13 +72,16 @@ Once you have their feedback, summarize it clearly:
 
 ### Phase 5: Submit via Google Form
 
-Once they confirm, provide the pre-filled Google Form link:
+Once they confirm, **open the form directly in their browser** using the Bash tool:
 
-> "Perfect! Click this link to submit your feedback:
->
-> [GENERATED LINK]
->
-> The form will open with your feedback already filled in. Just review it and click Submit. Remember—this is completely anonymous. Thanks for helping us improve!"
+1. Construct the pre-filled URL with their feedback (URL-encoded)
+2. Use Bash to open it:
+   - On macOS: `open "URL"`
+   - On Linux (Codespaces): `xdg-open "URL"`
+   - Or try: `open "URL" 2>/dev/null || xdg-open "URL"`
+3. Tell the user:
+
+> "I've opened the feedback form in your browser. Just review it and click Submit. Remember—this is completely anonymous. Thanks for helping us improve!"
 
 ---
 
