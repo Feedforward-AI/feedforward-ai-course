@@ -7,7 +7,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 - **What**: AI course teaching executives to use Claude Code
 - **User**: Beginner—be verbose, explain everything
 - **Paths**: `practice/` (active scenario), `data/` (CSVs), `workspace/` (their work)
-- **Skills**: `/simulate` (create scenario), `/set-scenario` (switch scenarios), `/feedback`, `/help`
+- **Skills**: `/wtf` (VS Code help), `/simulate` (create scenario), `/set-scenario` (switch), `/feedback`
 - **Mode**: Teaching mode ON—explain commands, define terms, show reasoning
 ---
 
@@ -68,6 +68,8 @@ Regularly inform the user about the state of their context window (how much of t
 
 - **Active scenario**: `practice/` (symlink - use this for exercises)
 - Meridian documents: `docs/`
+- VS Code guides: `docs/vscode/` (beginner-friendly, written for this course)
+- Claude Code reference: `docs/claude-code/` (auto-updated from Anthropic docs)
 - Data files: `data/`
 - Student workspace: `workspace/` (their persistent work area)
   - `workspace/skills/` - student-created skills
@@ -81,14 +83,26 @@ Regularly inform the user about the state of their context window (how much of t
 
 Type `/help` to see current commands, or ask "What skills are available?"
 
+### Key Skills
+- `/wtf` - Interactive help for VS Code and the environment (great for beginners!)
+- `/simulate` - Create a custom practice scenario based on your real work
+- `/set-scenario` - Switch between Meridian and your custom simulations
+- `/feedback` - Send anonymous course feedback
+
+### Reference Documentation
+- **VS Code Docs**: `docs/vscode/` - Beginner guides for the editor (layout, terminal, files, markdown, shortcuts)
+- **Claude Code Docs**: `docs/claude-code/` - Full documentation for Claude Code features (slash commands, settings, MCP, hooks, etc.) - auto-updated from Anthropic's docs
+
 ## Architecture
 
 This is a Codespaces-based learning environment:
 
 1. **Lesson Loading**: On startup, `lessons.txt` controls which lesson repos are fetched. Content from those repos populates `docs/`, `data/`, and `.claude/` directories.
 
-2. **Tool Merging**: Student-created tools in `workspace/skills|agents|commands/` are copied into `.claude/` on each startup, allowing students to extend the environment.
+2. **Claude Code Docs**: Official Claude Code documentation is fetched from a community mirror (updated every 3 hours) and placed in `docs/claude-code/`. This powers the `/wtf` skill.
 
-3. **Practice Scenario Symlink**: The `practice/` symlink points to the active scenario folder. By default it points to `docs/` (Meridian). When students create a simulation with `/simulate`, they can activate it as their practice scenario. Use `/set-scenario` to switch.
+3. **Tool Merging**: Student-created tools in `workspace/skills|agents|commands/` are copied into `.claude/` on each startup, allowing students to extend the environment.
 
-4. **Scenario-Based Learning**: The Meridian Industries documents in `docs/` form a cohesive case study. Students can also create custom simulations that mirror their real work context.
+4. **Practice Scenario Symlink**: The `practice/` symlink points to the active scenario folder. By default it points to `docs/` (Meridian). When students create a simulation with `/simulate`, they can activate it as their practice scenario. Use `/set-scenario` to switch.
+
+5. **Scenario-Based Learning**: The Meridian Industries documents in `docs/` form a cohesive case study. Students can also create custom simulations that mirror their real work context.

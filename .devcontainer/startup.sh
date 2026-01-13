@@ -98,7 +98,29 @@ for REPO_URL in $LESSONS; do
 done
 
 # =============================================================================
-# STEP 4: Create practice/ symlink (active scenario pointer)
+# STEP 4: Fetch Claude Code documentation (for /wtf help)
+# =============================================================================
+
+# Clone or update the community-maintained Claude Code docs mirror
+# Source: https://github.com/ericbuess/claude-code-docs (updates every 3 hours)
+CC_DOCS_REPO="https://github.com/ericbuess/claude-code-docs.git"
+CC_DOCS_DIR="/tmp/claude-code-docs"
+
+echo "   Fetching: Claude Code docs"
+if [ -d "$CC_DOCS_DIR" ]; then
+    git -C "$CC_DOCS_DIR" pull -q 2>/dev/null || true
+else
+    git clone --depth 1 -q "$CC_DOCS_REPO" "$CC_DOCS_DIR" 2>/dev/null || true
+fi
+
+# Copy docs to local directory (overwrite to get updates)
+if [ -d "$CC_DOCS_DIR/docs" ]; then
+    mkdir -p docs/claude-code
+    cp -r "$CC_DOCS_DIR/docs/"* docs/claude-code/ 2>/dev/null || true
+fi
+
+# =============================================================================
+# STEP 5: Create practice/ symlink (active scenario pointer)
 # =============================================================================
 
 # practice/ is a symlink that points to the "active" scenario folder
@@ -121,7 +143,7 @@ else
 fi
 
 # =============================================================================
-# STEP 5: Merge student's own tools into .claude/
+# STEP 6: Merge student's own tools into .claude/
 # =============================================================================
 
 cp -rn workspace/skills/* .claude/skills/ 2>/dev/null || true
@@ -129,7 +151,7 @@ cp -rn workspace/agents/* .claude/agents/ 2>/dev/null || true
 cp -rn workspace/commands/* .claude/commands/ 2>/dev/null || true
 
 # =============================================================================
-# STEP 6: Configure Claude Code to use API key without login prompt
+# STEP 7: Configure Claude Code to use API key without login prompt
 # =============================================================================
 
 mkdir -p ~/.claude
@@ -151,7 +173,7 @@ cat > ~/.claude/settings.json << CLAUDE_SETTINGS
 CLAUDE_SETTINGS
 
 # =============================================================================
-# STEP 7: Display status
+# STEP 8: Display status
 # =============================================================================
 
 SKILL_COUNT=$(find .claude/skills -name "SKILL.md" 2>/dev/null | wc -l | tr -d ' ')
