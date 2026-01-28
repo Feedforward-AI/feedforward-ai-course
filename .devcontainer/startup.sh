@@ -151,8 +151,10 @@ cp -rn workspace/agents/* .claude/agents/ 2>/dev/null || true
 cp -rn workspace/commands/* .claude/commands/ 2>/dev/null || true
 
 # =============================================================================
-# STEP 7: Configure Claude Code to use API key without login prompt
+# STEP 7: Configure Claude Code to use ONLY the provided API key
 # =============================================================================
+# The VS Code extension can set up its own auth (apiKeyHelper), which conflicts
+# with ANTHROPIC_API_KEY. We need to clear ALL other auth methods.
 
 mkdir -p ~/.claude
 
@@ -163,14 +165,50 @@ cat > ~/.claude.json << 'CLAUDE_JSON'
 }
 CLAUDE_JSON
 
-# Configure to use the API key from environment
-# Note: Double quotes so $ANTHROPIC_API_KEY expands
-cat > ~/.claude/settings.json << CLAUDE_SETTINGS
+# Clear ALL Claude Code auth/settings to start fresh
+# This removes any apiKeyHelper, OAuth tokens, or other auth the extension set up
+rm -f ~/.claude/credentials.json 2>/dev/null || true
+rm -f ~/.claude/auth.json 2>/dev/null || true
+rm -f ~/.claude/statsig_user.json 2>/dev/null || true
+
+# Run claude /logout to clear any cached OAuth tokens (silent, non-interactive)
+# This must be done BEFORE setting up the API key config
+if command -v claude &> /dev/null; then
+    echo "   Clearing previous auth..."
+    claude /logout 2>/dev/null || true
+fi
+
+# Write clean settings - only use ANTHROPIC_API_KEY from environment
+# Do NOT set customApiKey here, let Claude Code read from env var directly
+cat > ~/.claude/settings.json << 'SETTINGS_EOF'
 {
-  "apiProvider": "anthropic",
-  "customApiKey": "$ANTHROPIC_API_KEY"
+  "apiProvider": "anthropic"
 }
-CLAUDE_SETTINGS
+SETTINGS_EOF
+
+# Clear managed-settings.json to remove apiKeyHelper
+# This is where the VS Code extension stores the apiKeyHelper script path
+cat > ~/.claude/managed-settings.json << 'MANAGED_EOF'
+{
+}
+MANAGED_EOF
+
+# Also clear any system-level managed settings (Linux/Codespaces)
+if [ -d "/home/vscode/.config/ClaudeCode" ]; then
+    rm -f /home/vscode/.config/ClaudeCode/managed-settings.json 2>/dev/null || true
+fi
+if [ -d "$HOME/.config/ClaudeCode" ]; then
+    mkdir -p "$HOME/.config/ClaudeCode"
+    cat > "$HOME/.config/ClaudeCode/managed-settings.json" << 'MANAGED_EOF'
+{
+}
+MANAGED_EOF
+fi
+
+# Unset any conflicting environment variables
+unset CLAUDE_CODE_OAUTH_TOKEN 2>/dev/null || true
+
+echo "   ✓ Claude Code: Using provided API key"
 
 # =============================================================================
 # STEP 8: Display status
