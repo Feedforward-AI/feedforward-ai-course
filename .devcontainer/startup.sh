@@ -153,8 +153,8 @@ cp -rn workspace/commands/* .claude/commands/ 2>/dev/null || true
 # =============================================================================
 # STEP 7: Configure Claude Code to use the provided API key WITHOUT prompting
 # =============================================================================
-# Using apiKeyHelper bypasses the "Do you want to use this API key?" prompt.
-# The helper script simply outputs the API key, and Claude Code uses it directly.
+# The "Do you want to use this API key?" prompt appears when ANTHROPIC_API_KEY
+# is in the environment. Solution: use apiKeyHelper and unset ANTHROPIC_API_KEY.
 
 mkdir -p ~/.claude
 
@@ -165,11 +165,14 @@ cat > ~/.claude.json << 'CLAUDE_JSON'
 }
 CLAUDE_JSON
 
-# Create an apiKeyHelper script that outputs the API key
-# This bypasses the interactive "Do you want to use this API key?" prompt
+# Save the API key to a file (so apiKeyHelper can read it without env var)
+echo "${ANTHROPIC_API_KEY}" > ~/.claude/.api-key
+chmod 600 ~/.claude/.api-key
+
+# Create an apiKeyHelper script that reads from file (not env var)
 cat > ~/.claude/api-key-helper.sh << 'HELPER_EOF'
 #!/bin/bash
-echo "${ANTHROPIC_API_KEY}"
+cat ~/.claude/.api-key
 HELPER_EOF
 chmod +x ~/.claude/api-key-helper.sh
 
@@ -181,7 +184,22 @@ cat > ~/.claude/settings.json << 'SETTINGS_EOF'
 }
 SETTINGS_EOF
 
-echo "   ✓ Claude Code: Configured to use provided API key"
+# Create a wrapper script that unsets ANTHROPIC_API_KEY before running claude
+# This prevents the "Do you want to use this API key?" prompt
+cat > /usr/local/bin/claude-wrapper << 'WRAPPER_EOF'
+#!/bin/bash
+unset ANTHROPIC_API_KEY
+exec /usr/local/bin/claude "$@"
+WRAPPER_EOF
+chmod +x /usr/local/bin/claude-wrapper 2>/dev/null || sudo chmod +x /usr/local/bin/claude-wrapper 2>/dev/null || true
+
+# Create an alias so 'claude' uses the wrapper
+# This goes in bashrc so it persists across terminal sessions
+if ! grep -q "alias claude=" ~/.bashrc 2>/dev/null; then
+    echo 'alias claude="unset ANTHROPIC_API_KEY && command claude"' >> ~/.bashrc
+fi
+
+echo "   ✓ Claude Code: Configured to use provided API key (no prompt)"
 
 # =============================================================================
 # STEP 8: Display status
