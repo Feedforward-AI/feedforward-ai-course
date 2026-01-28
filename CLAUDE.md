@@ -106,3 +106,15 @@ This is a Codespaces-based learning environment:
 4. **Practice Scenario Symlink**: The `practice/` symlink points to the active scenario folder. By default it points to `docs/` (Meridian). When students create a simulation with `/simulate`, they can activate it as their practice scenario. Use `/set-scenario` to switch.
 
 5. **Scenario-Based Learning**: The Meridian Industries documents in `docs/` form a cohesive case study. Students can also create custom simulations that mirror their real work context.
+
+## Python Usage
+
+This environment uses Debian Linux, which restricts pip by default. Always use:
+
+- **Run Python**: `python3` (not `python`)
+- **Install packages**: `pip3 install package-name --break-system-packages`
+
+Example:
+```bash
+pip3 install python-pptx --break-system-packages
+```
