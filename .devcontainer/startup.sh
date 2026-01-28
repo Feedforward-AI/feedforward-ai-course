@@ -151,10 +151,10 @@ cp -rn workspace/agents/* .claude/agents/ 2>/dev/null || true
 cp -rn workspace/commands/* .claude/commands/ 2>/dev/null || true
 
 # =============================================================================
-# STEP 7: Configure Claude Code to use ONLY the provided API key
+# STEP 7: Configure Claude Code to use the provided API key WITHOUT prompting
 # =============================================================================
-# The VS Code extension can set up its own auth (apiKeyHelper), which conflicts
-# with ANTHROPIC_API_KEY. We need to clear ALL other auth methods.
+# Using apiKeyHelper bypasses the "Do you want to use this API key?" prompt.
+# The helper script simply outputs the API key, and Claude Code uses it directly.
 
 mkdir -p ~/.claude
 
@@ -165,50 +165,23 @@ cat > ~/.claude.json << 'CLAUDE_JSON'
 }
 CLAUDE_JSON
 
-# Clear ALL Claude Code auth/settings to start fresh
-# This removes any apiKeyHelper, OAuth tokens, or other auth the extension set up
-rm -f ~/.claude/credentials.json 2>/dev/null || true
-rm -f ~/.claude/auth.json 2>/dev/null || true
-rm -f ~/.claude/statsig_user.json 2>/dev/null || true
+# Create an apiKeyHelper script that outputs the API key
+# This bypasses the interactive "Do you want to use this API key?" prompt
+cat > ~/.claude/api-key-helper.sh << 'HELPER_EOF'
+#!/bin/bash
+echo "${ANTHROPIC_API_KEY}"
+HELPER_EOF
+chmod +x ~/.claude/api-key-helper.sh
 
-# Run claude /logout to clear any cached OAuth tokens (silent, non-interactive)
-# This must be done BEFORE setting up the API key config
-if command -v claude &> /dev/null; then
-    echo "   Clearing previous auth..."
-    claude /logout 2>/dev/null || true
-fi
-
-# Write clean settings - only use ANTHROPIC_API_KEY from environment
-# Do NOT set customApiKey here, let Claude Code read from env var directly
+# Configure Claude Code to use the helper script
 cat > ~/.claude/settings.json << 'SETTINGS_EOF'
 {
-  "apiProvider": "anthropic"
+  "apiProvider": "anthropic",
+  "apiKeyHelper": "~/.claude/api-key-helper.sh"
 }
 SETTINGS_EOF
 
-# Clear managed-settings.json to remove apiKeyHelper
-# This is where the VS Code extension stores the apiKeyHelper script path
-cat > ~/.claude/managed-settings.json << 'MANAGED_EOF'
-{
-}
-MANAGED_EOF
-
-# Also clear any system-level managed settings (Linux/Codespaces)
-if [ -d "/home/vscode/.config/ClaudeCode" ]; then
-    rm -f /home/vscode/.config/ClaudeCode/managed-settings.json 2>/dev/null || true
-fi
-if [ -d "$HOME/.config/ClaudeCode" ]; then
-    mkdir -p "$HOME/.config/ClaudeCode"
-    cat > "$HOME/.config/ClaudeCode/managed-settings.json" << 'MANAGED_EOF'
-{
-}
-MANAGED_EOF
-fi
-
-# Unset any conflicting environment variables
-unset CLAUDE_CODE_OAUTH_TOKEN 2>/dev/null || true
-
-echo "   ✓ Claude Code: Using provided API key"
+echo "   ✓ Claude Code: Configured to use provided API key"
 
 # =============================================================================
 # STEP 8: Display status
