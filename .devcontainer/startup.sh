@@ -160,46 +160,29 @@ cp -rn workspace/agents/* .claude/agents/ 2>/dev/null || true
 cp -rn workspace/commands/* .claude/commands/ 2>/dev/null || true
 
 # =============================================================================
-# STEP 7: Configure Claude Code with the API key (no prompts)
+# STEP 7: Configure Claude Code (skip onboarding, use env var for API key)
 # =============================================================================
-# The API key was saved to ~/.claude/.api-key-backup during setup.sh
-# We use remoteEnv to unset ANTHROPIC_API_KEY so Claude won't prompt.
-# Instead, Claude will use the primaryApiKey from ~/.claude.json.
+# Codespaces injects ANTHROPIC_API_KEY from the repository secret.
+# We just skip onboarding - Claude will use the env var directly.
+# Users will see a one-time prompt to accept the API key (select "Yes").
 
 mkdir -p ~/.claude
 
-# Read the API key from the backup file (saved during postCreateCommand)
-API_KEY=""
-if [ -f ~/.claude/.api-key-backup ]; then
-    API_KEY=$(cat ~/.claude/.api-key-backup)
-fi
-
-# Write the API key to Claude's config
-if [ -n "$API_KEY" ]; then
-    cat > ~/.claude.json << CLAUDE_JSON
-{
-  "hasCompletedOnboarding": true,
-  "primaryApiKey": "${API_KEY}"
-}
-CLAUDE_JSON
-    chmod 600 ~/.claude.json
-    echo "   ✓ Claude Code: API key configured"
-else
-    # No API key found - user will need to configure manually
-    cat > ~/.claude.json << 'CLAUDE_JSON'
+# Skip onboarding only - do NOT set primaryApiKey (causes conflict with env var)
+cat > ~/.claude.json << 'CLAUDE_JSON'
 {
   "hasCompletedOnboarding": true
 }
 CLAUDE_JSON
-    echo "   ⚠ No API key found - you'll need to configure Claude manually"
-fi
 
-# Create minimal settings
+# Minimal settings
 cat > ~/.claude/settings.json << 'SETTINGS_EOF'
 {
   "apiProvider": "anthropic"
 }
 SETTINGS_EOF
+
+echo "   ✓ Claude Code: Ready (select 'Yes' when prompted for API key)"
 
 # =============================================================================
 # STEP 8: Display status

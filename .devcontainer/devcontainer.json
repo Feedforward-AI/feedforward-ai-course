@@ -11,10 +11,6 @@
   "postCreateCommand": "bash .devcontainer/setup.sh",
   "postStartCommand": "bash .devcontainer/startup.sh",
 
-  "remoteEnv": {
-    "ANTHROPIC_API_KEY": null
-  },
-
   "customizations": {
     "vscode": {
       "extensions": [

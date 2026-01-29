@@ -16,57 +16,49 @@ if ! command -v pip3 &> /dev/null; then
 fi
 
 # =============================================================================
-# PATCH 2: Fix Claude Code auth conflict (removes apiKeyHelper approach)
+# PATCH 2: Fix Claude Code auth conflict (clean up old configurations)
 # =============================================================================
-# The old approach used both apiKeyHelper AND ANTHROPIC_API_KEY, causing conflict.
-# New approach: Save key to file, use remoteEnv to hide env var from Claude.
-# Note: For existing Codespaces, user may need to rebuild for full fix.
+# Remove any old apiKeyHelper or primaryApiKey setups that conflict with env var.
+# Claude will use ANTHROPIC_API_KEY directly from the environment.
 
-# Run if old api-key-helper.sh exists OR if backup file doesn't exist yet
-if [ -f ~/.claude/api-key-helper.sh ] || [ ! -f ~/.claude/.api-key-backup ]; then
-    echo "   Updating Claude Code auth configuration..."
+NEEDS_FIX=false
+
+# Check for old apiKeyHelper files
+if [ -f ~/.claude/api-key-helper.sh ]; then
+    NEEDS_FIX=true
+fi
+
+# Check if ~/.claude.json has primaryApiKey (causes conflict with env var)
+if [ -f ~/.claude.json ] && grep -q "primaryApiKey" ~/.claude.json 2>/dev/null; then
+    NEEDS_FIX=true
+fi
+
+if [ "$NEEDS_FIX" = true ]; then
+    echo "   Cleaning up Claude Code auth configuration..."
 
     # Remove old helper scripts
     rm -f ~/.claude/api-key-helper.sh
     rm -f ~/.claude/.api-key
+    rm -f ~/.claude/.api-key-backup
 
-    # Save API key to backup file (for use after remoteEnv hides the env var)
-    if [ -n "$ANTHROPIC_API_KEY" ]; then
-        mkdir -p ~/.claude
-        echo "$ANTHROPIC_API_KEY" > ~/.claude/.api-key-backup
-        chmod 600 ~/.claude/.api-key-backup
-    fi
-
-    # Read key from backup (or env var as fallback)
-    API_KEY=""
-    if [ -f ~/.claude/.api-key-backup ]; then
-        API_KEY=$(cat ~/.claude/.api-key-backup)
-    elif [ -n "$ANTHROPIC_API_KEY" ]; then
-        API_KEY="$ANTHROPIC_API_KEY"
-    fi
-
-    # Configure Claude with the key
-    if [ -n "$API_KEY" ]; then
-        cat > ~/.claude.json << CLAUDE_JSON
+    # Rewrite ~/.claude.json WITHOUT primaryApiKey
+    cat > ~/.claude.json << 'CLAUDE_JSON'
 {
-  "hasCompletedOnboarding": true,
-  "primaryApiKey": "${API_KEY}"
+  "hasCompletedOnboarding": true
 }
 CLAUDE_JSON
-        chmod 600 ~/.claude.json
-    fi
 
-    # Rewrite settings.json without apiKeyHelper
+    # Clean settings.json
     cat > ~/.claude/settings.json << 'SETTINGS_EOF'
 {
   "apiProvider": "anthropic"
 }
 SETTINGS_EOF
 
-    # Remove the old bash alias if present
+    # Remove old bash alias if present
     sed -i '/alias claude=/d' ~/.bashrc 2>/dev/null || true
 
-    echo "   ✓ Auth configuration updated"
+    echo "   ✓ Auth configuration cleaned up"
 fi
 
 # =============================================================================
