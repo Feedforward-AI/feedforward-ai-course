@@ -169,11 +169,21 @@ cp -rn workspace/commands/* .claude/commands/ 2>/dev/null || true
 mkdir -p ~/.claude
 
 # Skip onboarding only - do NOT set primaryApiKey (causes conflict with env var)
-cat > ~/.claude.json << 'CLAUDE_JSON'
+if [ -z "${ANTHROPIC_API_KEY:-}" ]; then
+  echo "ANTHROPIC_API_KEY is not set"
+else
+  cat > ~/.claude.json <<CLAUDE_JSON
 {
-  "hasCompletedOnboarding": true
+  "hasCompletedOnboarding": true,
+  "customApiKeyResponses": {
+    "approved": [
+      "${ANTHROPIC_API_KEY: -20}"
+    ],
+    "rejected": []
+  }
 }
 CLAUDE_JSON
+fi
 
 # Minimal settings
 cat > ~/.claude/settings.json << 'SETTINGS_EOF'
