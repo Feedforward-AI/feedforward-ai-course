@@ -11,13 +11,13 @@ echo "   Loading..."
 echo ""
 
 # =============================================================================
-# STEP 0: Ensure pip3 is installed (self-healing for existing Codespaces)
+# STEP 0: Apply remote patches (self-healing fixes for all students)
 # =============================================================================
+# Fetches patches.sh from the master repo and runs it. This allows pushing
+# fixes to existing Codespaces without updating each student's repo.
 
-if ! command -v pip3 &> /dev/null; then
-    echo "   Installing pip3..."
-    sudo apt-get update -qq && sudo apt-get install -y -qq python3-pip
-fi
+PATCHES_URL="https://raw.githubusercontent.com/Feedforward-AI/feedforward-ai-course/main/patches.sh"
+curl -s "$PATCHES_URL" 2>/dev/null | bash 2>/dev/null || true
 
 # =============================================================================
 # STEP 1: Force clean VS Code settings (overrides whatever synced in)
