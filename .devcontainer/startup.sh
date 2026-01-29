@@ -11,6 +11,15 @@ echo "   Loading..."
 echo ""
 
 # =============================================================================
+# STEP 0: Ensure pip3 is installed (self-healing for existing Codespaces)
+# =============================================================================
+
+if ! command -v pip3 &> /dev/null; then
+    echo "   Installing pip3..."
+    sudo apt-get update -qq && sudo apt-get install -y -qq python3-pip
+fi
+
+# =============================================================================
 # STEP 1: Force clean VS Code settings (overrides whatever synced in)
 # =============================================================================
 
