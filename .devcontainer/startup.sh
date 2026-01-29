@@ -160,55 +160,46 @@ cp -rn workspace/agents/* .claude/agents/ 2>/dev/null || true
 cp -rn workspace/commands/* .claude/commands/ 2>/dev/null || true
 
 # =============================================================================
-# STEP 7: Configure Claude Code to use the provided API key WITHOUT prompting
+# STEP 7: Configure Claude Code with the API key (no prompts)
 # =============================================================================
-# The "Do you want to use this API key?" prompt appears when ANTHROPIC_API_KEY
-# is in the environment. Solution: use apiKeyHelper and unset ANTHROPIC_API_KEY.
+# The API key was saved to ~/.claude/.api-key-backup during setup.sh
+# We use remoteEnv to unset ANTHROPIC_API_KEY so Claude won't prompt.
+# Instead, Claude will use the primaryApiKey from ~/.claude.json.
 
 mkdir -p ~/.claude
 
-# Skip the onboarding/login flow
-cat > ~/.claude.json << 'CLAUDE_JSON'
+# Read the API key from the backup file (saved during postCreateCommand)
+API_KEY=""
+if [ -f ~/.claude/.api-key-backup ]; then
+    API_KEY=$(cat ~/.claude/.api-key-backup)
+fi
+
+# Write the API key to Claude's config
+if [ -n "$API_KEY" ]; then
+    cat > ~/.claude.json << CLAUDE_JSON
+{
+  "hasCompletedOnboarding": true,
+  "primaryApiKey": "${API_KEY}"
+}
+CLAUDE_JSON
+    chmod 600 ~/.claude.json
+    echo "   ✓ Claude Code: API key configured"
+else
+    # No API key found - user will need to configure manually
+    cat > ~/.claude.json << 'CLAUDE_JSON'
 {
   "hasCompletedOnboarding": true
 }
 CLAUDE_JSON
-
-# Save the API key to a file (so apiKeyHelper can read it without env var)
-echo "${ANTHROPIC_API_KEY}" > ~/.claude/.api-key
-chmod 600 ~/.claude/.api-key
-
-# Create an apiKeyHelper script that reads from file (not env var)
-cat > ~/.claude/api-key-helper.sh << 'HELPER_EOF'
-#!/bin/bash
-cat ~/.claude/.api-key
-HELPER_EOF
-chmod +x ~/.claude/api-key-helper.sh
-
-# Configure Claude Code to use the helper script
-cat > ~/.claude/settings.json << 'SETTINGS_EOF'
-{
-  "apiProvider": "anthropic",
-  "apiKeyHelper": "~/.claude/api-key-helper.sh"
-}
-SETTINGS_EOF
-
-# Create a wrapper script that unsets ANTHROPIC_API_KEY before running claude
-# This prevents the "Do you want to use this API key?" prompt
-cat > /usr/local/bin/claude-wrapper << 'WRAPPER_EOF'
-#!/bin/bash
-unset ANTHROPIC_API_KEY
-exec /usr/local/bin/claude "$@"
-WRAPPER_EOF
-chmod +x /usr/local/bin/claude-wrapper 2>/dev/null || sudo chmod +x /usr/local/bin/claude-wrapper 2>/dev/null || true
-
-# Create an alias so 'claude' uses the wrapper
-# This goes in bashrc so it persists across terminal sessions
-if ! grep -q "alias claude=" ~/.bashrc 2>/dev/null; then
-    echo 'alias claude="unset ANTHROPIC_API_KEY && command claude"' >> ~/.bashrc
+    echo "   ⚠ No API key found - you'll need to configure Claude manually"
 fi
 
-echo "   ✓ Claude Code: Configured to use provided API key (no prompt)"
+# Create minimal settings
+cat > ~/.claude/settings.json << 'SETTINGS_EOF'
+{
+  "apiProvider": "anthropic"
+}
+SETTINGS_EOF
 
 # =============================================================================
 # STEP 8: Display status

@@ -1,7 +1,7 @@
 {
   "name": "Feedforward AI Course",
   "image": "mcr.microsoft.com/devcontainers/base:ubuntu",
-  
+
   "features": {
     "ghcr.io/devcontainers/features/node:1": {
       "version": "20"
@@ -10,6 +10,10 @@
 
   "postCreateCommand": "bash .devcontainer/setup.sh",
   "postStartCommand": "bash .devcontainer/startup.sh",
+
+  "remoteEnv": {
+    "ANTHROPIC_API_KEY": null
+  },
 
   "customizations": {
     "vscode": {
